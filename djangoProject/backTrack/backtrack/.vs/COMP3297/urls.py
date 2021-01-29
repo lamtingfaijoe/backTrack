@@ -1,0 +1,52 @@
+from django.urls import path,re_path
+from COMP3297 import views
+
+urlpatterns = [
+	path('<int:project>/newpbi/',
+		views.newPBI
+		, name='newPBI'),
+    path('<int:project>/invite/',
+        views.invite
+        , name='invite'),
+	path('newproject/',
+		views.newproject,
+		name='newproject'),
+	path('<int:project>/owner',
+		views.OwnerView.as_view(),
+		name='owner'),
+	path('<int:project>/manager',
+		views.ManagerView.as_view(),
+		name='manager'),
+	path('<int:project>/developer',
+		views.DeveloperView.as_view(),
+		name='developer'),
+	path('unassigneddeveloper',
+		views.UnassignedDeveloperView.as_view(),
+		name='unassigneddeveloper'),
+	path('managerhome/<str:username>',
+		views.ManagerHomeView.as_view(),
+		name='managerhome'),
+	path('signup/',
+		views.SignUpView,
+		name='signup'),
+	path('home/', 
+		views.HomeView.as_view(), 
+		name='home'),
+	path('<int:project>/newtask/',
+		views.newtask,
+		name='newtask'),
+    path('gotowork/',
+         views.GoToWork,
+         name='GoToWork'),
+    path('<int:project>/newSprint/',
+    	views.newSprint,
+    	name='newSprint'),
+    path('deleteSprint/<int:project_id>/<int:sprint_number>/',
+    	views.deleteSprint,
+    	name='deleteSprint'),
+    path('<int:id>/deleteProject/',
+    	views.deleteProject,
+    	name='deleteProject'
+    	),
+]		
+

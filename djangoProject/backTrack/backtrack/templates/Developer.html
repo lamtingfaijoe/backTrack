@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table, th, td {
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+th, td {
+	padding: 5px;
+	text-align: left;
+}
+</style>
+</head>
+<title>{{user.name}} | Developer view | BackTrack</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<style>
+body {font-family: "Times New Roman", Georgia, Serif;}
+h1, h2, h3, h4, h5, h6 {
+	font-family: "Playfair Display";
+	letter-spacing: 3px;
+}
+</style>
+<body>
+
+<!-- Navbar (sit on top) -->
+<div class="w3-top">
+	<div class="w3-bar w3-white w3-padding w3-card" style="letter-spacing:4px;">
+	<a href="{% url 'home' %}" class="w3-bar-item w3-button"><span style="color: brown">BackTrack</span></a>
+	<a class="w3-bar-item w3-button" onclick="openPage('Project Info',this)" id="defaultOpen">Project Info</a>
+	<a class="w3-bar-item w3-button" onclick="openPage('Product Backlog',this)">Product Backlog</a>
+	<a class="w3-bar-item w3-button" onclick="openPage('Sprint Backlog',this)">Sprint Backlog</a>
+
+	<!-- Right-sided navbar links. Hide them on small screens -->
+	<div class="w3-right w3-hide-small">
+		{% if user.is_authenticated %}
+		<a href="{% url 'logout' %}" class="w3-bar-item w3-button"><span style="color: red">logout</span></a>
+		{% else %}
+		<a href="{% url 'login' %}" class="w3-bar-item w3-button"><span style="color: red">login</span></a>
+	{% endif %}
+	</div>
+	</div>
+	{% if messages %}
+		{% for message in messages %}
+			{% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+				<div class="w3-card w3-center w3-red" style="letter-spacing:4px;">
+					<br>ERROR: {{ message }}<br> <br>
+				</div>
+			{% endif %}
+			{% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+				<div class="w3-card w3-center w3-green" style="letter-spacing:4px;">
+					<br>SUCCESS: {{ message }}<br> <br>
+				</div>
+			{% endif %}
+			{% if message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+				<div class="w3-card w3-center w3-orange" style="letter-spacing:4px;">
+					<br>WARNING: {{ message }}<br> <br>
+				</div>
+			{% endif %}
+		{% endfor %}
+	{% endif %}
+</div>
+
+<!-- <hr><hr> -->
+
+<!-- Page content -->
+<div class="content" style="max-width:1920px">
+
+	<!-- Project Info -->
+	<div id="Project Info" class="tabcontent">
+		<br><br><br><br><br><br><br>
+		<!--div class="w3-row w3-padding-64" id="proj_info"--> 
+		<div class="w3-col m6 w3-padding-large">
+		<br><br><br><br><br><br><br>
+			<h5 class="w3-center">Hi, Developer <strong>{{user.name}}</strong>!</h5>
+			<h1 class="w3-center">Project: {{ project.name }}</h1>
+		</div>
+
+		<div class="w3-col m6 w3-padding-large">
+			<br><br>
+			<p class="w3-large"><span class="w3-tag w3-light-grey">Project Owner</span></p>
+			<ul><p class="w3-large w3-text-grey w3-hide-medium">{{ owner.name }}</p></ul>
+			<p class="w3-large"><span class="w3-tag w3-light-grey">Project Managers </span></p>
+			<p class="w3-large w3-text-grey w3-hide-medium">
+				{% for manager in manager_list %}
+				<ul><p class="w3-large w3-text-grey w3-hide-medium">{{ manager.name }}</p></ul>
+				{% empty %}
+				<ul><p class="w3-large w3-text-grey w3-hide-medium">No managers are appointed yet.</p></ul>
+				{% endfor %}
+			</p>
+			<p class="w3-large"><span class="w3-tag w3-light-grey">Project Developers </span></p>
+			<p class="w3-large w3-text-grey w3-hide-medium">
+				{% for developer in developer_list %}
+				<ul><p class="w3-large w3-text-grey w3-hide-medium">{{ developer.name }}</p></ul>
+				{% empty %}
+				<ul><p class="w3-large w3-text-grey w3-hide-medium">No Developers yet.</p></ul>
+				{% endfor %}
+			</p>
+		</div>
+	</div>
+	</div>
+			
+	<!-- Product backlog in the developer's view -->
+	<div id="Product Backlog" class="tabcontent">
+		<div class="w3-row w3-padding-64" id="product_backlog">
+			<div class="w3-col l6 w3-padding-large">
+			<h1 class="w3-left">Product Backlog</h1><br>
+			<font face="Sans-serif"><a class="w3-bar-item w3-button" onclick="openPage('Filtered Product Backlog',this)">Hide finished PBIs</a></font>
+
+			<table style="width:200%">
+				<tr>
+					<th>Priority</th>
+					<th>Name</th>
+					<th>Detail</th>
+					<th>Est. Story Point</th>
+					<th>Cum. Story Point</th>
+					<th>Status</th>
+					<th>Sprint</th>
+				</tr>
+				{% for pbi in pbi_list|dictsort:"priority" %}
+				<tr>
+					<th>{{pbi.priority}}</th>
+					<th>{{pbi.PBI_name}}</th>
+					<th>{{pbi.description}}</th>
+					<th>{{pbi.est_storypoint}}</th>
+					{% load backtrack_filters %}
+					<th>{{cum_sp|index:forloop.counter0}}</th>
+					<!--th>{{pbi|check_PBI_status:task_of_pbi}}</th-->
+					<th>{{pbi.get_PBI_status_display}}
+					<th>{{pbi.sprint.sprint_number}}</th>            
+
+				</tr>
+					{% empty %}
+					<tr><p class="w3-large"><span class="w3-tag w3-light-grey">No PBI yet.</span></p></tr>
+					{% endfor %}
+			</table>		
+			</div>		
+		</div>
+	</div>
+
+	<div id="Filtered Product Backlog" class="tabcontent">
+		<div class="w3-row w3-padding-64" id="product_backlog">
+			<div class="w3-col l6 w3-padding-large">
+				<h1 class="w3-left">Product Backlog</h1><br>
+				<font face="Sans-serif"><a class="w3-bar-item w3-button" onclick="openPage('Product Backlog',this)">Show all PBIs</a></font>
+
+			<table style="width:200%">
+				<tr>
+					<th>Priority</th>
+					<th>Name</th>
+					<th>Detail</th>
+					<th>Est. Story Point</th>
+					<th>Cum. Story Point</th>
+					<th>Status</th>
+					<th>Sprint</th>
+				</tr>
+				{% for pbi in pbi_list|dictsort:"priority" %}
+				{% if pbi.get_PBI_status_display != 'Finished' %}
+					<tr>
+						<th>{{pbi.priority}}</th>
+						<th>{{pbi.PBI_name}}</th>
+						<th>{{pbi.description}}</th>
+						<th>{{pbi.est_storypoint}}</th>
+						{% load backtrack_filters %}
+						<th>{{cum_sp|index:forloop.counter0}}</th>
+						<!--th>{{pbi|check_PBI_status:task_of_pbi}}</th-->
+						<th>{{pbi.get_PBI_status_display}}
+						<th>{{pbi.sprint.sprint_number}}</th>             
+
+					</tr>
+				{% endif %}
+					{% empty %}
+					<tr><p class="w3-large"><span class="w3-tag w3-light-grey">No PBI yet.</span></p></tr>
+					{% endfor %}
+			</table>		
+			</div>		
+		</div>
+	</div>
+
+	<!-- Sprint backlog in developer's view -->
+	<div id="Sprint Backlog" class="tabcontent">
+		<div class="w3-row w3-padding-64">
+			<div class="w3-col m6 w3-padding-large">
+				<font face="Sans-serif"><b>
+					<!-- Sprint management -->
+					<a href="{% url 'newSprint' project=project.id %}" class="w3-bar-item w3-button" >Create new sprint</a>
+					<a href="{% url 'deleteSprint' project_id=project.id %}" class="w3-bar-item w3-button" >Delete a sprint</a>
+					<a href="{% url 'nextSprint' project_id=project.id %}" class="w3-bar-item w3-button" >Move to next sprint</a>
+
+					<!-- Add task button -->
+					<a href="{% url 'newtask' project_id=project.id %}" class="w3-bar-item w3-button" >Add new task</a>
+					<a class="w3-bar-item w3-button" onclick="openPage('Current Sprint',this)">Show current sprint only</a>
+				</font></b>
+
+					{% for sprint in task_list%}
+					{% load backtrack_filters %}
+					{% if forloop.counter == project.current_sprint %}
+
+						<h4>Current Sprint {{ forloop.counter }} | Effort burnt: {{sprint|remain_effort}}/{{sprint|total_effort}} | 
+						{%if sprint|total_effort > sprint_list|index:forloop.counter %}
+							<a style="color:red">Capacity: {{sprint|total_effort}}/{{sprint_list|index:forloop.counter}}</a>
+						{% else %}
+							Capacity: {{sprint|total_effort}}/{{sprint_list|index:forloop.counter}}
+						{% endif %}
+						</h4>
+							<table style="width:200%">
+								<h4>
+									<tr>
+										<th>PBI name</th>
+										<th>Description</th>
+										<th>Estimated Effort</th>
+										<th>Name of the Developer</th>
+										<th>Status</th>
+										<th>Action</th>
+									</tr>
+										{% for task in sprint %}
+									<tr>
+										<th>{{task.pbi.PBI_name}}</th>
+										<th>{{task.description}}</th>
+										<th>{{task.estimated_effort}}</th>
+										<th>{{task.developer.name}}</th>
+										<th>{{task.get_task_status_display}}</th>
+										<th>
+											<a href="edittask/{{task.id}}" class="w3-bar-item w3-button" title="Edit">Edit</a>
+											<a href="deletetask/{{task.id}}" class="w3-bar-item w3-button" title="Delete">Delete</a>
+										</th>
+									</tr>
+										{% empty %}
+										<tr><p class="w3-large"><span class="w3-tag w3-light-grey">No task yet.</span></p></tr>
+										{% endfor %}
+								</h4>
+							</table>
+						{% else %}
+							<h4>Sprint {{ forloop.counter }} | Effort burnt: {{sprint|remain_effort}}/{{sprint|total_effort}} | 
+							{%if sprint|total_effort > sprint_list|index:forloop.counter %}
+								<a style="color:red">Capacity: {{sprint|total_effort}}/{{sprint_list|index:forloop.counter}}</a>
+							{% else %}
+								Capacity: {{sprint|total_effort}}/{{sprint_list|index:forloop.counter}}
+							{% endif %}
+							</h4>
+							<table style="width:200%">
+								<tr>
+									<th>PBI Name</th>
+									<th>Description</th>
+									<th>Estimated Effort</th>
+									<th>Name of the Developer</th>
+									<th>Status</th>
+									<th>Action</th>
+								</tr>
+								{% for task in sprint %}
+								<tr>
+									<th>{{task.pbi.PBI_name}}</th>
+									<th>{{task.description}}</th>
+									<th>{{task.estimated_effort}}</th>
+									<th>{{task.developer.name}}</th>
+									<th>{{task.get_task_status_display}}</th>
+									<th>
+										<a href="edittask/{{task.id}}" class="w3-bar-item w3-button" title="Edit">Edit</a>
+										<a href="deletetask/{{task.id}}" class="w3-bar-item w3-button" title="Delete">Delete</a>
+									</th>
+								</tr>
+									{% empty %}
+								<tr><p class="w3-large"><span class="w3-tag w3-light-grey">No task yet.</span></p></tr>
+									{% endfor %}
+							</table>
+						{% endif %}
+						{% empty %}
+							<tr><p class="w3-large"><span class="w3-tag w3-light-grey">No sprint yet.</span></p></tr>
+						{% endfor %}
+			</div>
+		</div>
+	</div>
+
+	<div id="Current Sprint" class="tabcontent">
+		<div class="w3-row w3-padding-64">
+			<div class="w3-col m6 w3-padding-large">
+				<font face="Sans-serif"><b>
+					<!-- Add sprint button -->
+					<a href="{% url 'newSprint' project=project.id %}" class="w3-bar-item w3-button" >Create new sprint</a>
+					<a href="{% url 'deleteSprint' project_id=project.id %}" class="w3-bar-item w3-button" >Delete a sprint</a>
+					<a href="nextSprint/{{project.id}}" class="w3-bar-item w3-button" >Move to next sprint</a>
+					<!-- Add task button -->
+					<a href="{% url 'newtask' project_id=project.id %}" class="w3-bar-item w3-button" >Add new task</a>
+					<a class="w3-bar-item w3-button" onclick="openPage('Sprint Backlog',this)">Show all sprints</a>
+
+				</font></b>
+					
+					{% for sprint in task_list%}
+					{% load backtrack_filters %}
+					{% if forloop.counter == project.current_sprint %}
+
+						<h4>Current Sprint {{ forloop.counter }} | Effort burnt: {{sprint|remain_effort}}/{{sprint|total_effort}} | 
+						{%if sprint|total_effort > sprint_list|index:forloop.counter %}
+							<a style="color:red">Capacity: {{sprint|total_effort}}/{{sprint_list|index:forloop.counter}}</a>
+						{% else %}
+							Capacity: {{sprint|total_effort}}/{{sprint_list|index:forloop.counter}}
+						{% endif %}
+						</h4>
+							<table style="width:200%">
+								<h4>
+									<tr>
+										<th>PBI name</th>
+										<th>Description</th>
+										<th>Estimated Effort</th>
+										<th>Name of the Developer</th>
+										<th>Status</th>
+										<th>Action</th>
+									</tr>
+										{% for task in sprint %}
+									<tr>
+										<th>{{task.pbi.PBI_name}}</th>
+										<th>{{task.description}}</th>
+										<th>{{task.estimated_effort}}</th>
+										<th>{{task.developer.name}}</th>
+										<th>{{task.get_task_status_display}}</th>
+										<th>
+											<a href="edittask/{{task.id}}" class="w3-bar-item w3-button" title="Edit">Edit</a>
+											<a href="deletetask/{{task.id}}" class="w3-bar-item w3-button" title="Delete">Delete</a>
+										</th>
+									</tr>
+										{% empty %}
+										<tr><p class="w3-large"><span class="w3-tag w3-light-grey">No task yet.</span></p></tr>
+										{% endfor %}
+								</h4>
+							</table>
+						{% endif %}
+						{% empty %}
+							<tr><p class="w3-large"><span class="w3-tag w3-light-grey">No sprint yet.</span></p></tr>
+						{% endfor %}
+			</div>
+		</div>
+	</div>
+
+<!-- End page content -->
+</div>
+
+</body>
+
+<script type="text/javascript">
+
+	function openPage(pageName,elmnt) {
+		var i, tabcontent, tablinks;
+		tabcontent = document.getElementsByClassName("tabcontent");
+
+		for (i = 0; i < tabcontent.length; i++) {
+			tabcontent[i].style.display = "none";
+		}
+
+		tablinks = document.getElementsByClassName("w3-bar-item w3-button");
+
+		for (i = 0; i < tablinks.length; i++) {
+			tablinks[i].style.backgroundColor = "";
+		}
+
+		document.getElementById(pageName).style.display = "block";
+		elmnt.style.backgroundColor = color;
+	}
+
+	// Get the element with id="defaultOpen" and click on it
+	document.getElementById("defaultOpen").click();
+</script>
+</html>

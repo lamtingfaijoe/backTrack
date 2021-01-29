@@ -1,0 +1,4 @@
+1. unzip the file
+2. open command and move to the "backtrack" directory which contains the "manage.py" file
+3. type and run "python manage.py runserver" in the command line
+4. open "http://127.0.0.1:8000/COMP3297/home" in the internet browser
